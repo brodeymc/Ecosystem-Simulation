@@ -2632,6 +2632,8 @@ MonoBehaviour:
   cellPrefab: {fileID: 3884906492149131437, guid: 73b2f013ed8a96342a0218d42fcb43e7, type: 3}
   preyPrefab: {fileID: 7863248780170072820, guid: d1abdb791543f47428e170886c2cea43, type: 3}
   predatorPrefab: {fileID: 0}
+  gridDisplayWidth: 5
+  gridDisplayHeight: 5
 --- !u!4 &1997561791
 Transform:
   m_ObjectHideFlags: 0

@@ -30,16 +30,51 @@ public class SimulationController : MonoBehaviour
     private GameObject[,] visGrid;
     private Dictionary<AnimalAgent, GameObject> visAnimals = new Dictionary<AnimalAgent, GameObject>();
 
+    [Header("Display Settings")]
+    public float gridDisplayWidth = 10f;
+    public float gridDisplayHeight = 10f;
+    private float cellSize;
+    private Vector3 offset;
+
     // avoids running when simulation is inactive
     private bool active = false;
 
     // initializes new simulation grid
     public void Initialize(int width, int height, float simSpeed, float droughtChance)
     {
+        if (active)
+        {
+            if (visGrid != null)
+            {
+                foreach (var cellObj in visGrid)
+                {
+                    if (cellObj != null)
+                        Destroy(cellObj);
+                }
+            }
+
+            foreach (var v in visAnimals)
+            {
+                if (v.Value != null)
+                    Destroy(v.Value);
+            }
+
+            visAnimals.Clear();
+            animals.Clear();
+            grid = null;
+            visGrid = null;
+            active = false;
+        }
+
         this.width = width;
         this.height = height;
         simulationSpeed = simSpeed;
         this.droughtChance = droughtChance;
+
+        float cellWidth = gridDisplayWidth / width;
+        float cellHeight = gridDisplayHeight / height;
+        cellSize = Mathf.Min(cellWidth, cellHeight); 
+        offset = new Vector3(-width * cellSize / 2f, -height * cellSize / 2f, 0f); 
 
         drought = new Drought();
 
@@ -55,8 +90,10 @@ public class SimulationController : MonoBehaviour
                 float moisture = Random.value;
                 grid[x, y] = new EnvironmentCell(moisture, density);
 
-                Vector3 pos = new Vector3(x, y, 0);
+                Vector3 pos = new Vector3(x * cellSize, y * cellSize, 0) + offset;
                 var cellObj = Instantiate(cellPrefab, pos, Quaternion.identity, transform);
+                cellObj.transform.localScale = Vector3.one * cellSize;
+
                 visGrid[x, y] = cellObj;
                 UpdateCell(x, y);
             }
@@ -95,7 +132,8 @@ public class SimulationController : MonoBehaviour
 
         // predator prefab to be added after predator is implemented
         GameObject prefab = preyPrefab;
-        var visual = Instantiate(prefab, new Vector3(x, y, -1), Quaternion.identity, transform);
+        var visual = Instantiate(prefab, GridToWorld(x, y, -1), Quaternion.identity, transform);
+        visual.transform.localScale = Vector3.one * cellSize * 0.8f;
         visAnimals[agent] = visual;
     }
 
@@ -120,7 +158,7 @@ public class SimulationController : MonoBehaviour
 
         if (visAnimals.TryGetValue(agent, out GameObject visual))
         {
-            visual.transform.position = new Vector3(x, y, -1);
+            visual.transform.position = GridToWorld(x, y, -1);
         }
     }
 
@@ -217,5 +255,10 @@ public class SimulationController : MonoBehaviour
         {
             Remove(agent);
         }
+    }
+
+    private Vector3 GridToWorld(int x, int y, float z = 0f)
+    {
+        return new Vector3(x * cellSize, y * cellSize, z) + offset;
     }
 }

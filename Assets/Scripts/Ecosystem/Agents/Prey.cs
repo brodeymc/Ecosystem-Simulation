@@ -3,7 +3,7 @@ using UnityEngine;
 public class Prey : AnimalAgent
 {
     // amount of food to be eaten per timestep
-    public float consumptionRate = 0.05f;
+    public float consumptionRate = 0.1f;
 
     public float migrationRate = 0.25f;
 
