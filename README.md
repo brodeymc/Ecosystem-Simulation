@@ -21,9 +21,14 @@ Simulation project for CS 4632
 - Lotka-Volterra equations will not be used as they did not fit well with an agent based simulation
 
 ## Instillation Instructions
-
+- Install EcosystemSimulation.zip
+- Extract zip file
 
 ## Usage
+- Run EcosystemSimulation.exe within the extracted files from EcosystemSimulation.zip
+- Input simulation speed (simulation steps per second)
+- Input grid size (number of rows and columns)
+- Input drought chance (chance per step that a drought will occur, from 0 - 1)
 
 ## Architecture Overview
 **Main Components**
