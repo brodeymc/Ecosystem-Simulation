@@ -16,6 +16,7 @@ Simulation project for CS 4632
 - More complex drought events
 - Data collection and export
 - Expanded simulation customization
+- Improved simulation stability (limiting input size, testing edge cases)
 
 **Changes from original proposal**
 - Lotka-Volterra equations will not be used as they did not fit well with an agent based simulation
