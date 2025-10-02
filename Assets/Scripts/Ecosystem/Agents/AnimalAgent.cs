@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class AnimalAgent : MonoBehaviour
+public abstract class AnimalAgent
 {
     public Vector2 position;
     public float energy;
@@ -8,7 +8,7 @@ public abstract class AnimalAgent : MonoBehaviour
     public int x;
     public int y;
     public bool prey;
-    protected SimulationController controller;
+    public SimulationController controller;
 
     public virtual bool CanReproduce()
     {

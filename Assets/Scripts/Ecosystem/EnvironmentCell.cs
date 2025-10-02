@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EnvironmentCell : MonoBehaviour
+public class EnvironmentCell
 {
     // Soil moisture which affects growth rate, decreases during drought periods
     public float moisture;
