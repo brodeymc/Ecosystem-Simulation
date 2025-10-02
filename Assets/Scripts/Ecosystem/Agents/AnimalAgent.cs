@@ -7,6 +7,7 @@ public abstract class AnimalAgent : MonoBehaviour
     public float maxEnergy = 20f;
     public int x;
     public int y;
+    public bool prey;
     protected SimulationController controller;
 
     public virtual bool CanReproduce()
