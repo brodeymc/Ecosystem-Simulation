@@ -39,12 +39,17 @@ public class SimulationController : MonoBehaviour
     private Vector3 offset;
 
     [Header("Lotka-Volterra Parameters")]
+
+    [Tooltip("Prey birth rate")]
     public float alpha = 0.1f; // prey reproduction rate
 
+    [Tooltip("Predation rate")]
     public float beta = 0.01f; // predator success rate
 
+    [Tooltip("Predator reproduction rate")]
     public float delta = 0.005f; // predator reproduction rate
 
+    [Tooltip("Predator death rate")]
     public float gamma = 0.02f; // predator death rate
 
     // avoids running when simulation is inactive

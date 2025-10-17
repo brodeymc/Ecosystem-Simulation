@@ -35,4 +35,9 @@ public class Predator : AnimalAgent
  
         Consume(controller.grid);
     }
+
+    public override void Reproduce()
+    {
+
+    }
 }

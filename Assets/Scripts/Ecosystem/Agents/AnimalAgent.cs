@@ -23,4 +23,6 @@ public abstract class AnimalAgent
     }
 
     public abstract void TimeStep();
+
+    public abstract void Reproduce();
 }
