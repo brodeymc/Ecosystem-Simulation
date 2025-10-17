@@ -12,7 +12,9 @@ public class SimulationController : MonoBehaviour
     public float simulationSpeed = 1f;
     private float stepTimer = 0f;
 
-    public float initialPrey = 5f;
+    public int initialPrey = 5;
+    public int initialPredator = 5;
+    public float startingEnergy = 10f; // starting energy value
 
     private int width;
     private int height;
@@ -36,8 +38,20 @@ public class SimulationController : MonoBehaviour
     private float cellSize;
     private Vector3 offset;
 
+    [Header("Lotka-Volterra Parameters")]
+    public float alpha = 0.1f; // prey reproduction rate
+
+    public float beta = 0.01f; // predator success rate
+
+    public float delta = 0.005f; // predator reproduction rate
+
+    public float gamma = 0.02f; // predator death rate
+
     // avoids running when simulation is inactive
     private bool active = false;
+
+    private List<Prey> preyAgents = new List<Prey>();
+    private List<Predator> predatorAgents = new List<Predator>();
 
     // initializes new simulation grid
     public void Initialize(int width, int height, float simSpeed, float droughtChance)
@@ -106,7 +120,7 @@ public class SimulationController : MonoBehaviour
             int spawnY = Random.Range(0, height);
 
             Prey newPrey = new Prey();
-            newPrey.energy = Random.Range(5f, 15f); // random starting energy
+            newPrey.energy = startingEnergy;
             newPrey.controller = this;
             newPrey.x = spawnX;
             newPrey.y = spawnY;
@@ -130,11 +144,13 @@ public class SimulationController : MonoBehaviour
 
         animals[key].Add(agent);
 
-        // predator prefab to be added after predator is implemented
-        GameObject prefab = preyPrefab;
+        GameObject prefab = (agent is Predator) ? predatorPrefab : preyPrefab;
         var visual = Instantiate(prefab, GridToWorld(x, y, -1), Quaternion.identity, transform);
         visual.transform.localScale = Vector3.one * cellSize * 0.8f;
         visAnimals[agent] = visual;
+
+        if (agent is Predator pred) predatorAgents.Add(pred);
+        if (agent is Prey prey) preyAgents.Add(prey);
     }
 
     // moves agent to new position
@@ -190,6 +206,44 @@ public class SimulationController : MonoBehaviour
             return animals[key];
         }
         else return new List<AnimalAgent>();
+    }
+
+    // spawns new prey on reproduction
+    public void SpawnPrey(int x, int y)
+    {
+        int newX = Mathf.Clamp(x + Random.Range(-1, 2), 0, width - 1);
+        int newY = Mathf.Clamp(y + Random.Range(-1, 2), 0, height - 1);
+        Prey p = new Prey();
+        p.controller = this;
+        p.energy = startingEnergy;
+        NewAgent(p, newX, newY);
+    }
+
+    // spawns new predator on reproduction
+    public void SpawnPredator(int x, int y)
+    {
+        int newX = Mathf.Clamp(x + Random.Range(-1, 2), 0, width - 1);
+        int newY = Mathf.Clamp(y + Random.Range(-1, 2), 0, height - 1);
+        Predator p = new Predator();
+        p.controller = this;
+        p.energy = startingEnergy;
+        NewAgent(p, newX, newY);
+    }
+
+    public Prey FindNearestPrey(int x, int y, float radius)
+    {
+        Prey nearest = null;
+        float minDist = float.MaxValue;
+        foreach (var prey in preyAgents)
+        {
+            float dist = Vector2.Distance(new Vector2(x, y), new Vector2(prey.x, prey.y));
+            if (dist < radius && dist < minDist)
+            {
+                nearest = prey;
+                minDist = dist;
+            }
+        }
+        return nearest;
     }
 
     void UpdateCell(int x, int y)
