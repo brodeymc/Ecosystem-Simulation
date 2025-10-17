@@ -113,11 +113,18 @@ public class SimulationController : MonoBehaviour
             }
         }
 
+        //tracks animal locations to avoid overlap on spawn
+        HashSet<(int, int)> occupiedCells = new HashSet<(int, int)>();
+
         // random prey spawning
-        for (int i = 0; i < initialPrey; i++)
+        int preySpawned = 0;
+        while (preySpawned < initialPrey)
         {
             int spawnX = Random.Range(0, width);
             int spawnY = Random.Range(0, height);
+            var cellPos = (spawnX, spawnY);
+
+            if (occupiedCells.Contains(cellPos)) continue;
 
             Prey newPrey = new Prey();
             newPrey.energy = startingEnergy;
@@ -125,6 +132,28 @@ public class SimulationController : MonoBehaviour
             newPrey.x = spawnX;
             newPrey.y = spawnY;
             NewAgent(newPrey, spawnX, spawnY);
+            occupiedCells.Add(cellPos);
+            preySpawned++;
+        }
+
+        // random predator spawning
+        int predatorSpawned = 0;
+        while (predatorSpawned < initialPredator)
+        {
+            int spawnX = Random.Range(0, width);
+            int spawnY = Random.Range(0, height);
+            var cellPos = (spawnX, spawnY);
+
+            if (occupiedCells.Contains(cellPos)) continue;
+
+            Predator newPredator = new Predator();
+            newPredator.energy = startingEnergy;
+            newPredator.controller = this;
+            newPredator.x = spawnX;
+            newPredator.y = spawnY;
+            NewAgent(newPredator, spawnX, spawnY);
+            occupiedCells.Add(cellPos);
+            predatorSpawned++;
         }
 
         active = true;
@@ -292,16 +321,17 @@ public class SimulationController : MonoBehaviour
 
         List<AnimalAgent> dead = new List<AnimalAgent>();
 
-        foreach (var anim in animals)
+        foreach (var key in new List<(int, int)>(animals.Keys))
         {
-            foreach (var agent in anim.Value)
+            var agentList = animals[key];
+            foreach (var agent in new List<AnimalAgent>(agentList))
             {
+                agent.TimeStep();
+
                 if (agent.IsDead())
                 {
                     dead.Add(agent);
                 }
-
-                agent.TimeStep();
             }
         }
 

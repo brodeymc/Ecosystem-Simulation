@@ -31,10 +31,8 @@ public class Predator : AnimalAgent
 
     public override void TimeStep()
     {
-        if (IsDead()) { controller.Remove(this); }
-
         Hunt();
-        
+ 
         Consume(controller.grid);
     }
 }

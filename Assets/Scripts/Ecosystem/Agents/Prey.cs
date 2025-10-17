@@ -39,8 +39,6 @@ public class Prey : AnimalAgent
 
     public override void TimeStep()
     {
-        if (IsDead()) { controller.Remove(this); }
-
         if (Random.Range(0, 1) < migrationRate) { Migrate(controller.grid); }
         
         Consume(controller.grid);
