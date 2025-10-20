@@ -4,350 +4,78 @@ using UnityEngine;
 public class SimulationController : MonoBehaviour
 {
     [Header("Simulation Settings")]
-    public EnvironmentCell[,] grid;
-    private Dictionary<(int, int), List<AnimalAgent>> animals;
-    private Drought drought;
-
+    public float prey = 100f;
+    public float predator = 25f;
     // steps per second
     public float simulationSpeed = 1f;
-    private float stepTimer = 0f;
+    private float stepTimer = 0;
 
     public int initialPrey = 5;
     public int initialPredator = 5;
-    public float startingEnergy = 10f; // starting energy value
-
-    private int width;
-    private int height;
 
     [Header("Drought Settings")]
+    public float droughtLevel = 0f;
     public float droughtChance = 0.01f;
-    public int droughtMin = 1;
-    public int droughtMax = 5;
+    public float droughtDecay = 0.99f;
 
-    [Header("Visualization Settings")]
-    public GameObject cellPrefab;
-    public GameObject preyPrefab;
-    public GameObject predatorPrefab;
-
-    private GameObject[,] visGrid;
-    private Dictionary<AnimalAgent, GameObject> visAnimals = new Dictionary<AnimalAgent, GameObject>();
-
-    [Header("Display Settings")]
-    public float gridDisplayWidth = 10f;
-    public float gridDisplayHeight = 10f;
-    private float cellSize;
-    private Vector3 offset;
 
     [Header("Lotka-Volterra Parameters")]
-
     [Tooltip("Prey birth rate")]
     public float alpha = 0.1f; // prey reproduction rate
-
     [Tooltip("Predation rate")]
-    public float beta = 0.01f; // predator success rate
-
+    public float beta = 0.005f; // predation rate
     [Tooltip("Predator reproduction rate")]
     public float delta = 0.005f; // predator reproduction rate
-
     [Tooltip("Predator death rate")]
     public float gamma = 0.02f; // predator death rate
+
+    public float preyCarryingCapacity = 200f;
 
     // avoids running when simulation is inactive
     private bool active = false;
 
-    private List<Prey> preyAgents = new List<Prey>();
-    private List<Predator> predatorAgents = new List<Predator>();
-
-    // initializes new simulation grid
-    public void Initialize(int width, int height, float simSpeed, float droughtChance)
-    {
-        if (active)
-        {
-            if (visGrid != null)
-            {
-                foreach (var cellObj in visGrid)
-                {
-                    if (cellObj != null)
-                        Destroy(cellObj);
-                }
-            }
-
-            foreach (var v in visAnimals)
-            {
-                if (v.Value != null)
-                    Destroy(v.Value);
-            }
-
-            visAnimals.Clear();
-            animals.Clear();
-            grid = null;
-            visGrid = null;
-            active = false;
-        }
-
-        this.width = width;
-        this.height = height;
-        simulationSpeed = simSpeed;
-        this.droughtChance = droughtChance;
-
-        float cellWidth = gridDisplayWidth / width;
-        float cellHeight = gridDisplayHeight / height;
-        cellSize = Mathf.Min(cellWidth, cellHeight); 
-        offset = new Vector3(-width * cellSize / 2f, -height * cellSize / 2f, 0f); 
-
-        drought = new Drought();
-
-        animals = new Dictionary<(int, int), List<AnimalAgent>>();
-        grid = new EnvironmentCell[width, height];
-        visGrid = new GameObject[width, height];
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                float density = Random.value;
-                float moisture = Random.value;
-                grid[x, y] = new EnvironmentCell(moisture, density);
-
-                Vector3 pos = new Vector3(x * cellSize, y * cellSize, 0) + offset;
-                var cellObj = Instantiate(cellPrefab, pos, Quaternion.identity, transform);
-                cellObj.transform.localScale = Vector3.one * cellSize;
-
-                visGrid[x, y] = cellObj;
-                UpdateCell(x, y);
-            }
-        }
-
-        //tracks animal locations to avoid overlap on spawn
-        HashSet<(int, int)> occupiedCells = new HashSet<(int, int)>();
-
-        // random prey spawning
-        int preySpawned = 0;
-        while (preySpawned < initialPrey)
-        {
-            int spawnX = Random.Range(0, width);
-            int spawnY = Random.Range(0, height);
-            var cellPos = (spawnX, spawnY);
-
-            if (occupiedCells.Contains(cellPos)) continue;
-
-            Prey newPrey = new Prey();
-            newPrey.energy = startingEnergy;
-            newPrey.controller = this;
-            newPrey.x = spawnX;
-            newPrey.y = spawnY;
-            NewAgent(newPrey, spawnX, spawnY);
-            occupiedCells.Add(cellPos);
-            preySpawned++;
-        }
-
-        // random predator spawning
-        int predatorSpawned = 0;
-        while (predatorSpawned < initialPredator)
-        {
-            int spawnX = Random.Range(0, width);
-            int spawnY = Random.Range(0, height);
-            var cellPos = (spawnX, spawnY);
-
-            if (occupiedCells.Contains(cellPos)) continue;
-
-            Predator newPredator = new Predator();
-            newPredator.energy = startingEnergy;
-            newPredator.controller = this;
-            newPredator.x = spawnX;
-            newPredator.y = spawnY;
-            NewAgent(newPredator, spawnX, spawnY);
-            occupiedCells.Add(cellPos);
-            predatorSpawned++;
-        }
-
-        active = true;
-    }
-
-    // adds new agent to the grid
-    public void NewAgent(AnimalAgent agent, int x, int y)
-    {
-        agent.x = x;
-        agent.y = y;
-
-        var key = (x, y);
-        if (!animals.ContainsKey(key))
-        {
-            animals[key] = new List<AnimalAgent>();
-        }
-
-        animals[key].Add(agent);
-
-        GameObject prefab = (agent is Predator) ? predatorPrefab : preyPrefab;
-        var visual = Instantiate(prefab, GridToWorld(x, y, -1), Quaternion.identity, transform);
-        visual.transform.localScale = Vector3.one * cellSize * 0.8f;
-        visAnimals[agent] = visual;
-
-        if (agent is Predator pred) predatorAgents.Add(pred);
-        if (agent is Prey prey) preyAgents.Add(prey);
-    }
-
-    // moves agent to new position
-    public void MoveAgent(AnimalAgent agent, int x, int y)
-    {
-        var oldKey = (agent.x, agent.y);
-        if (animals.ContainsKey(oldKey))
-        {
-            animals[oldKey].Remove(agent);
-        }
-
-        var newKey = (x, y);
-        if (!animals.ContainsKey(newKey))
-        {
-            animals[newKey] = new List<AnimalAgent>();
-        }
-
-        animals[newKey].Add(agent);
-        agent.x = x;
-        agent.y = y;
-
-        if (visAnimals.TryGetValue(agent, out GameObject visual))
-        {
-            visual.transform.position = GridToWorld(x, y, -1);
-        }
-    }
-
-    public void Remove(AnimalAgent agent)
-    {
-        var key = (agent.x, agent.y);
-        if (animals.ContainsKey(key))
-        {
-            animals[key].Remove(agent);
-            if (animals[key].Count == 0)
-            {
-                animals.Remove(key);
-            }
-        }
-
-        if (visAnimals.TryGetValue(agent, out GameObject vis))
-        {
-            Destroy(vis);
-            visAnimals.Remove(agent);
-        }
-    }
-
-    // finds animals in cell
-    public List<AnimalAgent> GetAnimals(int x, int y)
-    {
-        var key = (x, y);
-        if (animals.ContainsKey(key))
-        {
-            return animals[key];
-        }
-        else return new List<AnimalAgent>();
-    }
-
-    // spawns new prey on reproduction
-    public void SpawnPrey(int x, int y)
-    {
-        int newX = Mathf.Clamp(x + Random.Range(-1, 2), 0, width - 1);
-        int newY = Mathf.Clamp(y + Random.Range(-1, 2), 0, height - 1);
-        Prey p = new Prey();
-        p.controller = this;
-        p.energy = startingEnergy;
-        NewAgent(p, newX, newY);
-    }
-
-    // spawns new predator on reproduction
-    public void SpawnPredator(int x, int y)
-    {
-        int newX = Mathf.Clamp(x + Random.Range(-1, 2), 0, width - 1);
-        int newY = Mathf.Clamp(y + Random.Range(-1, 2), 0, height - 1);
-        Predator p = new Predator();
-        p.controller = this;
-        p.energy = startingEnergy;
-        NewAgent(p, newX, newY);
-    }
-
-    public Prey FindNearestPrey(int x, int y, float radius)
-    {
-        Prey nearest = null;
-        float minDist = float.MaxValue;
-        foreach (var prey in preyAgents)
-        {
-            float dist = Vector2.Distance(new Vector2(x, y), new Vector2(prey.x, prey.y));
-            if (dist < radius && dist < minDist)
-            {
-                nearest = prey;
-                minDist = dist;
-            }
-        }
-        return nearest;
-    }
-
-    void UpdateCell(int x, int y)
-    {
-        EnvironmentCell cell = grid[x, y];  
-        var sr = visGrid[x, y].GetComponent<SpriteRenderer>();
-
-        // controls cell color
-        float hue = 0.33f; //green
-        float saturation = Mathf.Clamp01(cell.density);
-        float value = Mathf.Clamp01(cell.moisture);
-        Color color = Color.HSVToRGB(hue, saturation, value);
-        sr.color = color;
-    }
-
     private void Update()
     {
-        stepTimer += Time.deltaTime;
-        float stepDuration = 1f / simulationSpeed;
+       // if (!active) return;
 
-        if (stepTimer >= stepDuration && active)
+        stepTimer += Time.deltaTime * simulationSpeed; // accumulate fraction of steps
+
+        while (stepTimer >= 1f)
         {
-            stepTimer = 0;
             Step();
+            stepTimer -= 1f; // subtract one "step"
         }
     }
 
-    // controls simulation steps
     private void Step()
     {
+        float dt = 1f / simulationSpeed;
+
         if (Random.value < droughtChance)
         {
-            int level = Random.Range(droughtMin, droughtMax);
-            drought.NewDrought(level);
-            Debug.Log("Drought started, level " + level);
-        }
+            float newSeverity = Random.Range(0.2f, 1f);
 
-        for (int x = 0; x < width; x++)
+            // only changes drought severity if new drought is more severe
+            droughtLevel = Mathf.Max(droughtLevel, newSeverity);
+        }
+        else
         {
-            for (int y = 0; y < height; y++)
-            {
-                drought.UpdateCell(grid[x, y]);
-                UpdateCell(x, y);
-            }
+            droughtLevel *= droughtDecay;
         }
 
-        List<AnimalAgent> dead = new List<AnimalAgent>();
+        float carryingCapacity = preyCarryingCapacity * Mathf.Lerp(1f, 0.3f, droughtLevel);
 
-        foreach (var key in new List<(int, int)>(animals.Keys))
-        {
-            var agentList = animals[key];
-            foreach (var agent in new List<AnimalAgent>(agentList))
-            {
-                agent.TimeStep();
+        float logisticGrowth = alpha * prey * (1f - prey / carryingCapacity);
 
-                if (agent.IsDead())
-                {
-                    dead.Add(agent);
-                }
-            }
-        }
+        float dPrey = (logisticGrowth - beta * prey * predator) * dt;
+        float dPred = (delta * prey * predator - gamma * predator) * dt;
 
-        foreach (var agent in dead)
-        {
-            Remove(agent);
-        }
-    }
+        prey += dPrey;
+        predator += dPred;
 
-    private Vector3 GridToWorld(int x, int y, float z = 0f)
-    {
-        return new Vector3(x * cellSize, y * cellSize, z) + offset;
+        prey = Mathf.Max(prey, 0f);
+        predator = Mathf.Max(predator, 0f);
+
+        Debug.Log($"Prey: {prey:F2}, Predator: {predator:F2}, Drought: {droughtLevel:F2}");
     }
 }

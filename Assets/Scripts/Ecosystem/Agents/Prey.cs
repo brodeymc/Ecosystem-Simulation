@@ -77,12 +77,12 @@ public class Prey : AnimalAgent
     {
         int currX = (int)position.x;
         int currY = (int)position.y;
-        EnvironmentCell cell = controller.grid[currX, currY];
+        //EnvironmentCell cell = controller.grid[currX, currY];
 
-        float migrationChance = migrationRate * (1f - Mathf.Clamp01(cell.density));
-        if (Random.value < migrationChance) { Migrate(controller.grid); }
+        //float migrationChance = migrationRate * (1f - Mathf.Clamp01(cell.density));
+       //if (Random.value < migrationChance) { Migrate(controller.grid); }
         
-        Consume(controller.grid);
+        //Consume(controller.grid);
         Reproduce();
     }
 
@@ -92,7 +92,7 @@ public class Prey : AnimalAgent
         {
             energy /= 2;
 
-            controller.SpawnPrey(x, y);
+            //controller.SpawnPrey(x, y);
         }
     }
 }

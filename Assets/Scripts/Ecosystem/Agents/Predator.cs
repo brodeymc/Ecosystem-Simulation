@@ -33,7 +33,7 @@ public class Predator : AnimalAgent
     {
         Hunt();
  
-        Consume(controller.grid);
+        //Consume(controller.grid);
     }
 
     public override void Reproduce()

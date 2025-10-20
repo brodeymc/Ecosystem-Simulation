@@ -22,6 +22,6 @@ public class UserInputs : MonoBehaviour
         int gridSize = int.Parse(gridInput.text);
         float droughtChance = float.Parse(droughtInput.text);
 
-        simulationController.Initialize(gridSize, gridSize, speed, droughtChance);
+        //simulationController.Initialize(gridSize, gridSize, speed, droughtChance);
     }
 }

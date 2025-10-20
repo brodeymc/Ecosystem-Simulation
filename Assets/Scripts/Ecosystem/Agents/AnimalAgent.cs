@@ -19,7 +19,7 @@ public abstract class AnimalAgent
 
     protected void Move(int newX, int newY)
     {
-        controller.MoveAgent(this, newX, newY);
+        //controller.MoveAgent(this, newX, newY);
     }
 
     public abstract void TimeStep();
