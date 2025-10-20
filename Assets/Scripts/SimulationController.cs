@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SimulationController : MonoBehaviour
@@ -30,6 +29,12 @@ public class SimulationController : MonoBehaviour
     public float gamma = 0.02f; // predator death rate
 
     public float preyCarryingCapacity = 200f;
+
+    [Header("Resource Settings")]
+    public float resources = 100f;
+    public float maxResource = 100f;
+    public float resourceGrowthRate = 1f;
+    public float resourceConsumptionRate = 0.25f;
 
     // avoids running when simulation is inactive
     private bool active = false;
@@ -63,7 +68,14 @@ public class SimulationController : MonoBehaviour
             droughtLevel *= droughtDecay;
         }
 
-        float carryingCapacity = preyCarryingCapacity * Mathf.Lerp(1f, 0.3f, droughtLevel);
+        float resourceGrowth = resourceGrowthRate * Mathf.Lerp(1f, 0.2f, droughtLevel);
+        resources += resourceGrowth * (1f - resources / maxResource);
+        float consumption = prey * resourceConsumptionRate * dt;
+        resources -= consumption;
+        resources = Mathf.Max(resources, 0f);
+
+        float resourceFactor = Mathf.Clamp01(resources / maxResource);
+        float carryingCapacity = preyCarryingCapacity * resourceFactor;
 
         float logisticGrowth = alpha * prey * (1f - prey / carryingCapacity);
 
@@ -76,6 +88,6 @@ public class SimulationController : MonoBehaviour
         prey = Mathf.Max(prey, 0f);
         predator = Mathf.Max(predator, 0f);
 
-        Debug.Log($"Prey: {prey:F2}, Predator: {predator:F2}, Drought: {droughtLevel:F2}");
+        Debug.Log($"Prey: {prey:F2}, Predator: {predator:F2}, Resource: {resources:F2}, Drought: {droughtLevel:F2}");
     }
 }
