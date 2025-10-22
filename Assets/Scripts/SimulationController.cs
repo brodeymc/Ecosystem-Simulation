@@ -10,7 +10,6 @@ public class SimulationController : MonoBehaviour
     // steps per second
     public float timeStep = 0.001f;
     private float simulationTime = 0f;
-    public float duration = 60f;
     public float extinctionThreshold = 1f;
 
     [Header("Drought Settings")]
@@ -53,7 +52,11 @@ public class SimulationController : MonoBehaviour
         if (active) return;
 
         //creates files for new runs
+        #if UNITY_EDITOR
         baseFolder = Path.Combine(Application.dataPath, "SimulationRuns");
+        #else
+        baseFolder = Path.Combine(Directory.GetParent(Application.dataPath).FullName, "SimulationRuns");
+        #endif
         Directory.CreateDirectory(baseFolder);
 
         Setup();
@@ -140,7 +143,6 @@ public class SimulationController : MonoBehaviour
     {
         public string runID;
         public float time;
-        public float duration;
         public float finalPrey;
         public float finalPred;
         public float finalResource;
@@ -170,7 +172,6 @@ public class SimulationController : MonoBehaviour
         {
             runID = runID,
             time = (float)stopwatch.Elapsed.TotalSeconds,
-            duration = duration,
             finalPrey = prey,
             finalPred = predator,
             finalResource = resources,
@@ -186,10 +187,10 @@ public class SimulationController : MonoBehaviour
         using (var writer = new StreamWriter(indexPath, append: true))
         {
             if (writeHeader)
-                writer.WriteLine("runID,realTime,simDuration,finalPrey,finalPredator,finalResources,drought,randomSeed,resourceGrowthRate,memoryUsedBytes");
+                writer.WriteLine("runID,realTime,finalPrey,finalPredator,finalResources,drought,randomSeed,resourceGrowthRate,memoryUsedBytes");
 
             writer.WriteLine
-                ($"{runID},{summary.time:F2},{summary.duration:F2},{summary.finalPrey:F2}," +
+                ($"{runID},{summary.time:F2},{summary.finalPrey:F2}," +
                 $"{summary.finalPred:F2},{summary.finalResource:F2},{summary.droughtLevel:F2}," +
                 $"{summary.randomSeed},{summary.resGrowthRate:F4},{summary.memoryUsedBytes}");
         }
