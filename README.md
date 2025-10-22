@@ -1,25 +1,21 @@
 # Ecosystem-Simulation
 Simulation project for CS 4632
 
+## Project Overview
+This project simulates ecosystem dynamics in an ecosystem experiencing drought. This simulation combines Lotka-Volterra predator and prey interactions with resources, carrying capacities, and stochastic droughts to simulate the impact droughts have on species interactions.
+
 ## Project Status
 
-**Implemented so far**
-- Scalable simulation grid
-- Prey agents that move, consume resources, and die
-- Stochastic drought events which reduce cell moisture and density
-- Visualization of simulation with customizable parameters
-
-**What's next**
-- Improved prey migration patterns
-- Predator agents & hunting behavior
-- Reproduction for animal agents
-- More complex drought events
-- Data collection and export
-- Expanded simulation customization
-- Improved simulation stability (limiting input size, testing edge cases)
+**Implemented Features**
+- Lotka-Volterra Based Simulation
+- Predator & Prey interaction
+- Resources which are consumed by Prey
+- Stochastic Drought events which limit resource growth
+- Logistic growth for Prey and Resources with carrying capacities
+- Data collection for populations, drought level, and performance
 
 **Changes from original proposal**
-- Lotka-Volterra equations will not be used as they did not fit well with an agent based simulation
+- Simulation is no longer agent-based, shifting towards an approach that is more closely tied to mathematical models
 
 ## Instillation Instructions
 - Install EcosystemSimulation.zip
@@ -27,25 +23,17 @@ Simulation project for CS 4632
 
 ## Usage
 - Run EcosystemSimulation.exe within the extracted files from EcosystemSimulation.zip
-- Input simulation speed (simulation steps per second)
-- Input grid size (number of rows and columns)
-- Input drought chance (chance per step that a drought will occur, from 0 - 1)
+- Input initial population sizes for Prey, Predators, and Resources
+- Input parameters for reproduction, predation, growth, and death rates
+- Input name for run
+- Input seed for randomization
+- Click Start to begin simulation
 
 ## Architecture Overview
 **Main Components**
-- SimulationController: Manages overall simulation function on a grid
-- EnvironmentCell: Individual cells with moisture and density values
-- AnimalAgent: Abstract class with shared functions of predator and prey
-- Prey: Prey migration & consumption
-- UserInputs: Handles user input for simulation
-- Drought: Handles cell changes & stochastic droughts
-
-**How they map to the UML design**
-- Environment was split into SimulationController, EnvironmentCell, and Drought
-- Species = AnimalAgent
-- The function of resources is handled within Drought & EnvironmentCell
+- SimulationController: Manages all simulation logic, data collection and exports
+- UserInputs: Handles the users inputs and creates new simulations using user input
 
 **Architecture Changes**
-- The environment structure was changed to fit a cell based grid
-- Resources were changed to be values held within the cells and updated within the Drought class to simplify the calculation of changes within the environment
-
+- Individual scripts for Prey, Predator, and Resources have been removed in the process of shifting away from the agent based approach
+- All simulation functions are now within SimulationController
