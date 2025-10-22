@@ -91,7 +91,7 @@ public class UserInputs : MonoBehaviour
         else if (string.IsNullOrWhiteSpace(runIDInput.text))
             SetInvalid("Run ID cannot be empty");
 
-        else if (!int.TryParse(preyCarryingCapacityInput.text, out int seed) || seed <= 0)
+        else if (!int.TryParse(randomSeedInput.text, out int seed) || seed <= 0)
             SetInvalid("Seed must be a positive integer");
     }
 

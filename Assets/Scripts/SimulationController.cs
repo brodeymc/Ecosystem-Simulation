@@ -8,16 +8,15 @@ public class SimulationController : MonoBehaviour
     public float prey = 100f;
     public float predator = 25f;
     // steps per second
-    public float simulationSpeed = 1f;
-    private float stepTimer = 0;
+    public float timeStep = 0.001f;
     private float simulationTime = 0f;
     public float duration = 60f;
+    public float extinctionThreshold = 1f;
 
     [Header("Drought Settings")]
     public float droughtLevel = 0f;
     public float droughtChance = 0.01f;
     public float droughtDecay = 0.99f;
-
 
     [Header("Lotka-Volterra Parameters")]
     [Tooltip("Prey birth rate")]
@@ -63,28 +62,21 @@ public class SimulationController : MonoBehaviour
 
     private void Update()
     {
-       if (!active) return;
+        if (!active) return;
 
-       if (simulationTime >= duration)
-       {
-            EndRun();
-            active = false;
-            return;
-       }
-
-        stepTimer += Time.deltaTime * simulationSpeed;
-        simulationTime += Time.deltaTime;
-
-        while (stepTimer >= 1f)
+        if (prey <= extinctionThreshold || predator <= extinctionThreshold)
         {
-            Step();
-            stepTimer -= 1f; 
+            EndRun();
+            return;
         }
+
+        Step();
+        simulationTime += Time.deltaTime;
     }
 
     private void Step()
     {
-        float dt = 1f / simulationSpeed;
+        float dt = timeStep;
 
         if (Random.value < droughtChance)
         {
