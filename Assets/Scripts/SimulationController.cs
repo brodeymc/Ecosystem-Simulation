@@ -39,6 +39,7 @@ public class SimulationController : MonoBehaviour
 
     [Header("Data")]
     public string runID = "run_001";
+    public int randomSeed = 0;
     private string runFolder;
     private StreamWriter csvWriter;
     private Stopwatch stopwatch;
@@ -122,6 +123,9 @@ public class SimulationController : MonoBehaviour
 
     private void Setup()
     {
+        // seed value for randomization
+        UnityEngine.Random.InitState(randomSeed);
+
         runFolder = Path.Combine(baseFolder, runID);
 
         Directory.CreateDirectory(runFolder);
