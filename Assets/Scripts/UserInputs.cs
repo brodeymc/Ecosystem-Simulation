@@ -19,6 +19,7 @@ public class UserInputs : MonoBehaviour
     public TMP_InputField resourceCountInput;
     public TMP_InputField preyCarryingCapacityInput;
     public TMP_InputField randomSeedInput;
+    public TMP_InputField resourceGrowthRate;
 
     public Button startButton;
     public Button stopButton;
@@ -46,6 +47,7 @@ public class UserInputs : MonoBehaviour
         resourceCountInput.onValueChanged.AddListener(delegate { ValidateInputs(); });
         preyCarryingCapacityInput.onValueChanged.AddListener(delegate { ValidateInputs(); });
         randomSeedInput.onValueChanged.AddListener(delegate { ValidateInputs(); });
+        resourceGrowthRate.onValueChanged.AddListener(delegate { ValidateInputs(); });
 
         ValidateInputs();
     }
@@ -83,6 +85,9 @@ public class UserInputs : MonoBehaviour
         else if (!float.TryParse(preyCarryingCapacityInput.text, out float preyCap) || preyCap <= 0)
             SetInvalid("Prey carrying capacity must be positive");
 
+        else if (!float.TryParse(resourceGrowthRate.text, out float resGrowth) || resGrowth <= 0)
+            SetInvalid("Resource growth rate must be positive");
+
         else if (string.IsNullOrWhiteSpace(runIDInput.text))
             SetInvalid("Run ID cannot be empty");
 
@@ -116,6 +121,8 @@ public class UserInputs : MonoBehaviour
                 currentSim.maxResource = resourceCount; 
             }
             if (float.TryParse(preyCarryingCapacityInput.text, out float preyCarryingCapacity)) currentSim.preyCarryingCapacity = preyCarryingCapacity;
+            if (int.TryParse(randomSeedInput.text, out int randomSeed)) currentSim.randomSeed = randomSeed;
+            if (float.TryParse(resourceGrowthRate.text, out float growthRate)) currentSim.resourceGrowthRate = growthRate;
             
 
             currentSim.runID = runIDInput.text.Trim();

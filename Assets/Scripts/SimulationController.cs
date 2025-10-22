@@ -118,7 +118,8 @@ public class SimulationController : MonoBehaviour
         prey = Mathf.Max(prey, 0f);
         predator = Mathf.Max(predator, 0f);
 
-        csvWriter.WriteLine($"{stopwatch.Elapsed.TotalSeconds:F2},{simulationTime:F2},{prey:F2},{predator:F2},{resources:F2},{droughtLevel:F2}");
+        float memoryMB = System.GC.GetTotalMemory(false) / (1024f * 1024f);
+        csvWriter.WriteLine($"{stopwatch.Elapsed.TotalSeconds:F2},{simulationTime:F2},{prey:F2},{predator:F2},{resources:F2},{droughtLevel:F2},{memoryMB:F2}");
     }
 
     private void Setup()
@@ -135,7 +136,7 @@ public class SimulationController : MonoBehaviour
 
         string csvPath = Path.Combine(runFolder, "timeseries.csv");
         csvWriter = new StreamWriter(csvPath);
-        csvWriter.WriteLine("timestamp,simTime,prey,predator,resources,drought");
+        csvWriter.WriteLine("timestamp,simTime,prey,predator,resources,drought,memoryUsedMB");
 
         stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -152,6 +153,10 @@ public class SimulationController : MonoBehaviour
         public float finalPred;
         public float finalResource;
         public float droughtLevel;
+        public int randomSeed;
+        public float resGrowthRate;
+        //performance stats
+        public long memoryUsedBytes;
     }
 
     // collects data into files and destroys gameObject
@@ -167,6 +172,8 @@ public class SimulationController : MonoBehaviour
         csvWriter?.Dispose();
         csvWriter = null;
 
+        long memoryUsed = System.GC.GetTotalMemory(false);
+
         var summary = new SimSummary
         {
             runID = runID,
@@ -175,7 +182,10 @@ public class SimulationController : MonoBehaviour
             finalPrey = prey,
             finalPred = predator,
             finalResource = resources,
-            droughtLevel = droughtLevel
+            droughtLevel = droughtLevel,
+            randomSeed = randomSeed,
+            resGrowthRate = resourceGrowthRate,
+            memoryUsedBytes = memoryUsed
         };
 
         File.WriteAllText(Path.Combine(runFolder, "summary.json"), JsonUtility.ToJson(summary, true));
@@ -184,9 +194,12 @@ public class SimulationController : MonoBehaviour
         using (var writer = new StreamWriter(indexPath, append: true))
         {
             if (writeHeader)
-                writer.WriteLine("runID,realTime,simDuration,finalPrey,finalPredator,finalResources,drought");
+                writer.WriteLine("runID,realTime,simDuration,finalPrey,finalPredator,finalResources,drought,randomSeed,resourceGrowthRate,memoryUsedBytes");
 
-            writer.WriteLine($"{runID},{summary.time:F2},{summary.duration:F2},{summary.finalPrey:F2},{summary.finalPred:F2},{summary.finalResource:F2},{summary.droughtLevel:F2}");
+            writer.WriteLine
+                ($"{runID},{summary.time:F2},{summary.duration:F2},{summary.finalPrey:F2}," +
+                $"{summary.finalPred:F2},{summary.finalResource:F2},{summary.droughtLevel:F2}," +
+                $"{summary.randomSeed},{summary.resGrowthRate:F4},{summary.memoryUsedBytes}");
         }
 
         Destroy(gameObject);
