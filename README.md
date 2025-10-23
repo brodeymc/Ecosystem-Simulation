@@ -1,8 +1,19 @@
 # Ecosystem-Simulation
 Simulation project for CS 4632
 
-## Project Overview
-This project simulates ecosystem dynamics in an ecosystem experiencing drought. This simulation combines Lotka-Volterra predator and prey interactions with resources, carrying capacities, and stochastic droughts to simulate the impact droughts have on species interactions.
+## Simulation Description
+
+**Overview**
+	This project is intended to simulate an ecosystem under drought, and the changes in populations  and dynamics that result from them. This simulation models the population dynamics of an ecosystem with 3 entities: prey, predators, and resources. The simulation is primarily based on the Lotka-Volterra model for predator-prey interactions, with modifications to include a carrying capacity and logistic growth for prey, resource entities that interact with prey, and stochastic droughts that modify the simulation and impact the ecosystem.
+**Mathematical Models**
+	The primary model used in this simulation is Lotka-Volterra, which simulates predator-prey population dynamics. The prey and resources utilize logistic growth with a carrying capacity. In addition, stochastic droughts randomly occur which impacts several parameters in the simulation. The birth rates, growth rate for resources, death rates, and carrying capacities are all dynamically altered by the drought level.
+**Ecological Phenomenon**
+	This simulation is intended to study the ways in which stochastic environmental stressors impact an ecosystem and the species within. For this simulation, the environmental stressor is droughts, which have far reaching effects across the environment, impacting resources, predators, and prey. 
+**Research Questions**
+- How do environmental pressures affect the survivability of predator and prey populations?
+- How do droughts impact the long term stability of an ecosystem?
+- How are predator-prey dynamics altered under conditions of limited resources?
+
 
 ## Project Status
 
