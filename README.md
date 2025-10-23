@@ -10,7 +10,7 @@ This project simulates ecosystem dynamics in an ecosystem experiencing drought. 
 - Lotka-Volterra Based Simulation
 - Predator & Prey interaction
 - Resources which are consumed by Prey
-- Stochastic Drought events which limit resource growth
+- Stochastic Drought events which affect resources, prey, and predators
 - Logistic growth for Prey and Resources with carrying capacities
 - Data collection for populations, drought level, and performance
 
