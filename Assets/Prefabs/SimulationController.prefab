@@ -46,8 +46,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prey: 100
   predator: 25
-  timeStep: 0.0001
   extinctionThreshold: 0.1
+  maxSteps: 10000
   droughtLevel: 0
   droughtChance: 0.1
   droughtDecay: 0.99

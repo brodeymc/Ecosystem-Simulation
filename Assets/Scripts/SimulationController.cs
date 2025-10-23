@@ -9,14 +9,14 @@ public class SimulationController : MonoBehaviour
     public float predator = 25f;
     // steps per second
     private float timeStep = 0.1f;
-    private float simulationTime = 0f;
+    private int simulationTime = 0;
     public float extinctionThreshold = 0.1f;
+    public float maxSteps = 10000;
 
     [Header("Drought Settings")]
     public float droughtLevel = 0f;
     public float droughtChance = 0.01f;
     public float droughtDecay = 0.99f;
-    private float droughtTimer = 0f;
 
     [Header("Lotka-Volterra Parameters")]
     [Tooltip("Prey birth rate")]
@@ -42,6 +42,10 @@ public class SimulationController : MonoBehaviour
     private string runFolder;
     private StreamWriter csvWriter;
     private Stopwatch stopwatch;
+    private float preySum = 0f;
+    private float resourceSum = 0f;
+    private float predatorSum = 0f;
+    private float droughtSum = 0f;
 
     // avoids running when simulation is inactive
     private bool active = false;
@@ -68,19 +72,20 @@ public class SimulationController : MonoBehaviour
     {
         if (!active) return;
 
-        if (prey <= extinctionThreshold && predator <= extinctionThreshold)
+        // simulation ends when prey & predator are extinct or after set time
+        if ((prey <= extinctionThreshold && predator <= extinctionThreshold) || simulationTime >= maxSteps)
         {
             EndRun();
             return;
         }
 
         Step();
-        simulationTime += Time.deltaTime;
     }
 
     private void Step()
     {
         float dt = timeStep;
+        simulationTime += 1;
 
         if (Random.value < droughtChance)
         {
@@ -105,7 +110,7 @@ public class SimulationController : MonoBehaviour
         float resourceFactor = Mathf.Clamp01(resources / currMaxResource);
         float carryingCapacity = preyCarryingCapacity * resourceFactor;
 
-        float logisticGrowth = alpha * prey * (1f - prey / carryingCapacity);
+        float logisticGrowth = preyBirthRate * prey * (1f - prey / carryingCapacity);
 
         float dPrey = (logisticGrowth - beta * prey * predator) * dt;
         float dPred = (delta * prey * predator - predDeathRate * predator) * dt;
@@ -117,7 +122,11 @@ public class SimulationController : MonoBehaviour
         predator = Mathf.Max(predator, 0f);
 
         float memoryMB = System.GC.GetTotalMemory(false) / (1024f * 1024f);
-        csvWriter.WriteLine($"{stopwatch.Elapsed.TotalSeconds:F2},{simulationTime:F2},{prey:F2},{predator:F2},{resources:F2},{droughtLevel:F2},{memoryMB:F2}");
+        csvWriter.WriteLine($"{stopwatch.Elapsed.TotalSeconds:F3},{simulationTime},{prey:F2},{predator:F2},{resources:F2},{droughtLevel:F2},{memoryMB:F2}");
+        preySum += prey;
+        predatorSum += predator;
+        resourceSum += resources;
+        droughtSum += droughtLevel;
     }
 
     private void Setup()
@@ -129,13 +138,15 @@ public class SimulationController : MonoBehaviour
 
         Directory.CreateDirectory(runFolder);
 
-        string configFile = JsonUtility.ToJson(this, this);
-        File.WriteAllText(Path.Combine(runFolder, "config.json"), configFile);
+        string configFilePath = Path.Combine(runFolder, $"{runID}_config.json");
+        string configFile = JsonUtility.ToJson(this, true);
+        File.WriteAllText(configFilePath, configFile);
 
-        string csvPath = Path.Combine(runFolder, "timeseries.csv");
+        string csvPath = Path.Combine(runFolder, $"{runID}_timeseries.csv");
         csvWriter = new StreamWriter(csvPath);
         csvWriter.WriteLine("timestamp,simTime,prey,predator,resources,drought,memoryUsedMB");
 
+        // start stopwatch
         stopwatch = new Stopwatch();
         stopwatch.Start();
     }
@@ -146,12 +157,11 @@ public class SimulationController : MonoBehaviour
     {
         public string runID;
         public float time;
-        public float finalPrey;
-        public float finalPred;
-        public float finalResource;
-        public float droughtLevel;
+        public float avgPrey;
+        public float avgPred;
+        public float avgResource;
+        public float avgDroughtLevel;
         public int randomSeed;
-        public float resGrowthRate;
         //performance stats
         public long memoryUsedBytes;
     }
@@ -175,12 +185,11 @@ public class SimulationController : MonoBehaviour
         {
             runID = runID,
             time = (float)stopwatch.Elapsed.TotalSeconds,
-            finalPrey = prey,
-            finalPred = predator,
-            finalResource = resources,
-            droughtLevel = droughtLevel,
+            avgPrey = preySum / simulationTime,
+            avgPred = predatorSum / simulationTime,
+            avgResource = resourceSum / simulationTime,
+            avgDroughtLevel = droughtSum / simulationTime,
             randomSeed = randomSeed,
-            resGrowthRate = resourceGrowthRate,
             memoryUsedBytes = memoryUsed
         };
 
@@ -190,12 +199,12 @@ public class SimulationController : MonoBehaviour
         using (var writer = new StreamWriter(indexPath, append: true))
         {
             if (writeHeader)
-                writer.WriteLine("runID,realTime,finalPrey,finalPredator,finalResources,drought,randomSeed,resourceGrowthRate,memoryUsedBytes");
+                writer.WriteLine("runID,realTime,avgPrey,avgPredator,avgResources,avgDrought,randomSeed,memoryUsedBytes");
 
             writer.WriteLine
-                ($"{runID},{summary.time:F2},{summary.finalPrey:F2}," +
-                $"{summary.finalPred:F2},{summary.finalResource:F2},{summary.droughtLevel:F2}," +
-                $"{summary.randomSeed},{summary.resGrowthRate:F4},{summary.memoryUsedBytes}");
+                ($"{runID},{summary.time:F2},{summary.avgPrey:F2}," +
+                $"{summary.avgPred:F2},{summary.avgResource:F2},{summary.avgDroughtLevel:F2}," +
+                $"{summary.randomSeed},{summary.memoryUsedBytes}");
         }
 
         Destroy(gameObject);
