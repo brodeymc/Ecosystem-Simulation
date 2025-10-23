@@ -46,15 +46,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prey: 100
   predator: 25
-  simulationSpeed: 1
-  duration: 60
-  initialPrey: 5
-  initialPredator: 5
+  timeStep: 0.0001
+  extinctionThreshold: 0.1
   droughtLevel: 0
-  droughtChance: 0.01
+  droughtChance: 0.1
   droughtDecay: 0.99
   alpha: 0.1
-  beta: 0.005
+  beta: 0.001
   delta: 0.005
   gamma: 0.02
   preyCarryingCapacity: 200
@@ -63,3 +61,4 @@ MonoBehaviour:
   resourceGrowthRate: 0.1
   resourceConsumptionRate: 0.02
   runID: run_001
+  randomSeed: 0

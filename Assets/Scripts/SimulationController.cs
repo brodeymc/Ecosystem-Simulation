@@ -8,20 +8,21 @@ public class SimulationController : MonoBehaviour
     public float prey = 100f;
     public float predator = 25f;
     // steps per second
-    public float timeStep = 0.001f;
+    private float timeStep = 0.1f;
     private float simulationTime = 0f;
-    public float extinctionThreshold = 1f;
+    public float extinctionThreshold = 0.1f;
 
     [Header("Drought Settings")]
     public float droughtLevel = 0f;
     public float droughtChance = 0.01f;
     public float droughtDecay = 0.99f;
+    private float droughtTimer = 0f;
 
     [Header("Lotka-Volterra Parameters")]
     [Tooltip("Prey birth rate")]
     public float alpha = 0.1f; // prey reproduction rate
     [Tooltip("Predation rate")]
-    public float beta = 0.005f; // predation rate
+    public float beta = 0.001f; // predation rate
     [Tooltip("Predator reproduction rate")]
     public float delta = 0.005f; // predator reproduction rate
     [Tooltip("Predator death rate")]
@@ -33,7 +34,7 @@ public class SimulationController : MonoBehaviour
     public float resources = 100f;
     public float maxResource = 100f;
     public float resourceGrowthRate = 0.1f;
-    public float resourceConsumptionRate = 0.02f;
+    public float resourceConsumptionRate = 0.2f;
 
     [Header("Data")]
     public string runID = "run_001";
@@ -67,7 +68,7 @@ public class SimulationController : MonoBehaviour
     {
         if (!active) return;
 
-        if (prey <= extinctionThreshold || predator <= extinctionThreshold)
+        if (prey <= extinctionThreshold && predator <= extinctionThreshold)
         {
             EndRun();
             return;
@@ -83,29 +84,31 @@ public class SimulationController : MonoBehaviour
 
         if (Random.value < droughtChance)
         {
-            float newSeverity = Random.Range(0.2f, 1f);
-
-            // only changes drought severity if new drought is more severe
-            droughtLevel = Mathf.Max(droughtLevel, newSeverity);
+            droughtLevel = Mathf.Max(droughtLevel, Random.Range(0.1f, 0.99f));
         }
         else
         {
             droughtLevel *= droughtDecay;
         }
 
-        float resourceGrowth = resourceGrowthRate * Mathf.Lerp(1f, 0.2f, droughtLevel);
-        resources += resourceGrowth * (1f - resources / maxResource);
-        float consumption = prey * resourceConsumptionRate * dt;
-        resources -= consumption;
-        resources = Mathf.Max(resources, 0f);
+        // drought reduces resource growht rate as well as carrying capacity
+        float currGrowthRate = resourceGrowthRate * (1f - droughtLevel);
+        float currMaxResource = maxResource * (1f - droughtLevel);
 
-        float resourceFactor = Mathf.Clamp01(resources / maxResource);
+        resources += (currGrowthRate * resources * (1f - resources / currMaxResource)
+             - (resourceConsumptionRate * prey)) * dt;
+
+        // drought decreases prey birth rate and increases predator death rate
+        float preyBirthRate = alpha * (1f - droughtLevel);
+        float predDeathRate = gamma * (1f + droughtLevel);
+
+        float resourceFactor = Mathf.Clamp01(resources / currMaxResource);
         float carryingCapacity = preyCarryingCapacity * resourceFactor;
 
         float logisticGrowth = alpha * prey * (1f - prey / carryingCapacity);
 
         float dPrey = (logisticGrowth - beta * prey * predator) * dt;
-        float dPred = (delta * prey * predator - gamma * predator) * dt;
+        float dPred = (delta * prey * predator - predDeathRate * predator) * dt;
 
         prey += dPrey;
         predator += dPred;
