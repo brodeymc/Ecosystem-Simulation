@@ -1,0 +1,10 @@
+{
+    "runID": "run_013",
+    "time": 60.6070671081543,
+    "avgPrey": 13.682806015014649,
+    "avgPred": 64.93438720703125,
+    "avgResource": 66.55127716064453,
+    "avgDroughtLevel": 0.2951352894306183,
+    "randomSeed": 1,
+    "memoryUsedBytes": 5808128
+}

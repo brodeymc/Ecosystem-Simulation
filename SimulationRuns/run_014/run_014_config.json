@@ -1,0 +1,20 @@
+{
+    "prey": 10.0,
+    "predator": 25.0,
+    "extinctionThreshold": 0.10000000149011612,
+    "maxSteps": 10000.0,
+    "droughtLevel": 0.0,
+    "droughtChance": 0.009999999776482582,
+    "droughtDecay": 0.9900000095367432,
+    "alpha": 0.10000000149011612,
+    "beta": 0.0010000000474974514,
+    "delta": 0.004999999888241291,
+    "gamma": 0.05000000074505806,
+    "preyCarryingCapacity": 200.0,
+    "resources": 100.0,
+    "maxResource": 100.0,
+    "resourceGrowthRate": 0.10000000149011612,
+    "resourceConsumptionRate": 0.019999999552965165,
+    "runID": "run_014",
+    "randomSeed": 1
+}
