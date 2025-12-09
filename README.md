@@ -43,6 +43,21 @@ Simulation project for CS 4632
 - Input seed for randomization
 - Click Start to begin simulation
 
+## Simulation Parameters
+
+| Parameter                | Default | Description |
+|--------------------------|---------|-------------|
+| Prey Reproduction Rate    | 0.1     | Determines the growth rate of prey population per timestep |
+| Predator Reproduction Rate| 0.005   | Predator population growth depends on prey availability |
+| Predation Rate            | 0.001   | Rate at which predators consume prey |
+| Resource Growth Rate      | 0.1     | Rate at which resources regenerate |
+| Drought Probability       | 0.01    | Chance of drought occurring each timestep |
+| Prey Carrying Capacity    | 200     | Maximum sustainable prey population |
+| Initial Prey Population   | 100     | Starting number of prey |
+| Initial Predator Population | 25    | Starting number of predators |
+| Initial Resource Population | 100   | Starting number of resources |
+
+
 ## Architecture Overview
 **Main Components**
 - SimulationController: Manages all simulation logic, data collection and exports
