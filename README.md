@@ -60,10 +60,12 @@ Simulation project for CS 4632
 ## Example Outputs
 
 **Default Conditions**
+
 ![Default Scenario](ExampleOutputs/Default.png)
 - Populations oscillate and approach equilibrium over time.
 
 **Extreme Stress**
+
 ![Extreme Stress Scenario](ExampleOutputs/ExtremeStress.png)
 - Frequent droughts and low resources lead to population collapse.
 
