@@ -57,6 +57,15 @@ Simulation project for CS 4632
 | Initial Predator Population | 25    | Starting number of predators |
 | Initial Resource Population | 100   | Starting number of resources |
 
+## Example Outputs
+
+**Default Conditions**
+![Default Scenario](ExampleOutputs/Default.png)
+- Populations oscillate and approach equilibrium over time.
+
+**Extreme Stress**
+![Extreme Stress Scenario](ExampleOutputs/ExtremeStress.png)
+- Frequent droughts and low resources lead to population collapse.
 
 ## Architecture Overview
 **Main Components**
